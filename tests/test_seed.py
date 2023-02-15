@@ -1,5 +1,6 @@
 import torch
 import pytorch_seed as rand
+import random
 
 
 def test_seed():
@@ -69,8 +70,29 @@ def test_save_rng_indendent_streams():
     assert rng_1_together_2 == rng_1_interleaved_2
 
 
+def test_python_rng_is_saved():
+    rand.seed(1)
+    # restores random's RNG state
+    with rand.SavedRNG():
+        a = random.random()
+    b = random.random()
+    assert a == b
+
+    rng = rand.SavedRNG(5)
+    a = []
+    with rng:
+        a.append(random.random())
+    random.random()
+    with rng:
+        a.append(random.random())
+    rand.seed(5)
+    b = [random.random() for _ in range(2)]
+    assert a == b
+
+
 if __name__ == "__main__":
     test_seed()
     test_save_rng_seeded_does_not_change_global()
     test_save_rng_unseeded_does_not_change_global()
     test_save_rng_indendent_streams()
+    test_python_rng_is_saved()

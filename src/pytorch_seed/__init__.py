@@ -22,6 +22,7 @@ def seed(randseed=None):
 class RNGState:
 
     def __init__(self):
+        self.py_state = None
         self.np_state = None
         self.rng_state = None
         self.gpu_state = None
@@ -31,12 +32,14 @@ class RNGState:
         return self.rng_state is not None
 
     def restore(self):
+        random.setstate(self.py_state)
         np.random.set_state(self.np_state)
         torch.set_rng_state(self.rng_state)
         if self.save_gpu:
             torch.cuda.set_rng_state(self.gpu_state)
 
     def save(self):
+        self.py_state = random.getstate()
         self.np_state = np.random.get_state()
         self.rng_state = torch.get_rng_state()
         if self.save_gpu:
